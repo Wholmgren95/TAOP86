@@ -10,7 +10,6 @@ A = npzfile['A']
 bix = npzfile['bix'] #KOlumnindex för tillåten startbas
 zcheat = npzfile['zcheat']
 xcheat = npzfile['xcheat']
-
 bix = bix - 1
 
 t1 = time.time()
@@ -38,12 +37,16 @@ while iter >= 0:
 
     ut_row = ut_list.index(min(ut_list))
     bix[ut_row] = in_col
-    print(A[ut_row[in_col]])
-    A[ut_row] = A[ut_row]/A[ut_row[in_col]]
+    A[ut_row] = A[ut_row]/A[ut_row][in_col] #hela raden delat på minsta
+
+    for i in range(len(A[0])):
+        temp = A[i][in_col]
+        if i is not ut_row:
+            A[i] = A[i] - temp*A[ut_row]
+
     for a_rows,b_rows in zip(A,b):
         temp = a_rows[in_col]
-        for i in range(len(a_rows)):
-            a_rows[i] = a_rows[i] - temp*A[ut_row[i]]
+        a_rows = a_rows - temp*A[ut_row]
 
 
 
