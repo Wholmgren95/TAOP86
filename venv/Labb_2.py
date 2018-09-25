@@ -1,7 +1,7 @@
 import numpy as np
 import time
 import sys
-
+banan=5
 filc = " ".join(sys.argv[1:]).split('.')[0] + '.npz'
 npzfile = np.load(filc)
 c = npzfile['c']*-1
