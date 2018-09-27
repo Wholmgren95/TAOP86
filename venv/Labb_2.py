@@ -19,52 +19,58 @@ print ('Rows: ' + repr(m) + ' cols: ' + repr(n))
 
 # Create nix
 nix = np.setdiff1d(range(n), bix)
-
 B = A[:, bix]
 N = A[:, nix]
 cB = c[bix]
 cN = c[nix]
-
+xB = np.transpose(bix)
+xN = np.transpose(nix)
+x = 2 #xn + xb
 # Start iterations
 iter = 0
 while iter >= 0:
-    iter += 1
-    in_col=np.argmin(c)
-    rc_min = c[in_col]
-    ut_list=[]
-
-    for a_rows,b_rows in zip(A,b):
-        ut_list.append(b_rows/a_rows[in_col])
-
-    inkvar = ut_list.index(min(ut_list))
-    # bix[inkvar] = in_col
-    # A[inkvar] = A[inkvar]/A[inkvar][in_col] #hela raden delat på minsta
+    iter += 1  
+    # bix[utgvar] = inkvar
+    # A[utgvar] = A[utgvar]/A[utgvar][inkvar] #hela raden delat på minsta
     #
     # for i in range(len(A[0])):
-    #     temp = A[i][in_col]
-    #     if i is not inkvar:
-    #         A[i] = A[i] - temp*A[inkvar]
+    #     temp = A[i][inkvar]
+    #     if i is not utgvar:
+    #         A[i] = A[i] - temp*A[utgvar]
     #
     # for a_rows,b_rows in zip(A,b):
-    #     temp = a_rows[in_col]
-    #     a_rows = a_rows - temp*A[inkvar]
-
-
-
-
+    #     temp = a_rows[inkvar]
+    #     a_rows = a_rows - temp*A[utgvar]
+    
     # calc right-hand-sides and reduced costs
     # --------
+    
+
+    B_inv = np.linalg.inv(B)
+    xB = np.dot(B_inv, b)
+    xN = 0
+    y = np.transpose(np.dot(np.transpose(cB),B_inv))
+    z = np.dot(np.transpose(b),y)
+    c_hattN = cN - (np.dot(np.transpose(N),y)) #np.transpose(N)
+
     # calc most negative reduced cost, rc_min,
     # and index for entering variable, inkvar
     # --------
 
+    inkvar = np.argmin(c)
+    rc_min = c[inkvar]
+
+    
+    for e in c_hattN:
+        if e <=0:
+            break
     if rc_min >= -1.0E-12:
         print('Ready')
         iter = -1
 
-        # construct solution, x, and check it
-        # --------
-
+        bix[utgvar] = inkvar
+            # construct solution, x, and check it
+            # --------
         diffx = np.linalg.norm(x - xcheat)
         diffz = z - zcheat
         print('xdiff: ' + repr(diffx))
@@ -72,6 +78,9 @@ while iter >= 0:
     else:
         # calc entering column, a
         # --------
+        # a = inkommande kolumn hatt
+        # A[:,inkvar] är att ta ut kolumn ur A på plats inkvar
+        a = np.dot(B_inv, A[:, inkvar])
 
         if max(a) <= 0:
             # unbounded solution
@@ -80,12 +89,19 @@ while iter >= 0:
         else:
             # calc leaving var, utgvar
             # --------
+            ut_list = []
+
+            for a_rows, b_rows in zip(A, b):
+                ut_list.append(b_rows / a_rows[inkvar])
+
+            utgvar = ut_list.index(min(ut_list))
 
             print(' Iter: ' + repr(iter) + ' z: ' + repr(z) + ' rc: ' + repr(rc_min) + ' ink: ' + repr(
-                inkvar + 1) + ' utg: ' + repr(utgvar + 1))
+                utgvar + 1) + ' utg: ' + repr(utgvar + 1))
 
             # make new partition
             # --------
+
 
 elapsed = time.time() - t1
 print('Elapsed time: ' + repr(elapsed))
