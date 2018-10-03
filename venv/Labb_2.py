@@ -4,7 +4,7 @@ import sys
 
 filc = " ".join(sys.argv[1:]).split('.')[0] + '.npz'
 npzfile = np.load(filc)
-c = npzfile['c']*-1
+c = npzfile['c']
 b = npzfile['b']
 A = npzfile['A']
 bix = npzfile['bix'] #KOlumnindex för tillåten startbas
@@ -30,25 +30,9 @@ diffz=0
 iter = 0
 while iter >= 0:
     iter += 1  
-    # bix[utgvar] = inkvar
-    # A[utgvar] = A[utgvar]/A[utgvar][inkvar] #hela raden delat på minsta
-    #
-    # for i in range(len(A[0])):
-    #     temp = A[i][inkvar]
-    #     if i is not utgvar:
-    #         A[i] = A[i] - temp*A[utgvar]
-    #
-    # for a_rows,b_rows in zip(A,b):
-    #     temp = a_rows[inkvar]
-    #     a_rows = a_rows - temp*A[utgvar]
-    
-    # calc right-hand-sides and reduced costs
-    # --------
-    
 
     B_inv = np.linalg.inv(B)
     xB = np.dot(B_inv, b)
-
 
     y = np.transpose(np.dot(np.transpose(cB),B_inv))
     z = np.dot(np.transpose(b),y)
@@ -58,12 +42,12 @@ while iter >= 0:
     # and index for entering variable, inkvar
     # --------
 
-    inkvar = np.argmax(c)
-    rc_min = c[inkvar]*-1
+    inkvar = np.argmin(c_hattN)
+    rc_min = c_hattN[inkvar]
 
     
 
-    if(c_hattN <=0).all():
+    if(c_hattN >=0).all():
         iter=-1
     if rc_min >= -1.0E-12:
         print('Ready')
@@ -72,10 +56,10 @@ while iter >= 0:
 
             # construct solution, x, and check it
             # --------
-        diffx = np.linalg.norm(x - xcheat)
-        diffz = z - zcheat
-        print('xdiff: ' + repr(diffx))
-        print('zdiff: ' + repr(diffz))
+#        diffx = np.linalg.norm(x - xcheat)
+ #       diffz = z - zcheat
+     #   print('xdiff: ' + repr(diffx))
+      #  print('zdiff: ' + repr(diffz))
     else:
         # calc entering column, a
         # --------
@@ -92,8 +76,9 @@ while iter >= 0:
             # --------
             ut_list = []
 
-            for a_rows, b_rows in zip(N, b):
-                ut_list.append(b_rows / a_rows[inkvar])
+            for a_rows, b_rows in zip(N, xB):
+                if a_rows[inkvar] is not 0:
+                    ut_list.append(b_rows / a_rows[inkvar])
 
             utgvar = ut_list.index(min(ut_list))
 
@@ -104,17 +89,20 @@ while iter >= 0:
             # --------
 
             #bix[utgvar] = inkvar
-            bix[utgvar], nix[inkvar] = nix[inkvar],bix[utgvar]
+
+
+            bix[utgvar], nix[inkvar] = nix[inkvar], bix[utgvar]
             temp = np.copy(B[:, utgvar])
             B[:, utgvar] = N[:, inkvar]
             N[:, inkvar] = temp
-            N = np.roll(N,1,1)
             cN[inkvar], cB[utgvar] = cB[utgvar], cN[inkvar]
-            cN = np.roll(cN,1,0)
-
+            # N = np.roll(N,1,1)
+            # nix = np.roll(nix,1,0)
+            #cN = np.roll(cN,1,0)
+          #  c = np.append(cN,cB)
 
 
 elapsed = time.time() - t1
 print('Elapsed time: ' + repr(elapsed))
 print(zcheat)
-print("z diff:",z - zcheat)
+print("z:",z)
