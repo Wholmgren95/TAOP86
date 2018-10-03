@@ -23,6 +23,7 @@ B = A[:, bix]
 N = A[:, nix]
 cB = c[bix]
 cN = c[nix]
+z=0
 
 diffx=0
 diffz=0
@@ -76,19 +77,20 @@ while iter >= 0:
             # --------
             ut_list = []
 
-            for a_rows, b_rows in zip(N, xB):
-                if a_rows[inkvar] is not 0:
-                    ut_list.append(b_rows / a_rows[inkvar])
+            for a_vals, b_rows in zip(a, xB):
+                if a_vals > 0:
+                    ut_list.append(b_rows/a_vals)
+                else:
+                    ut_list.append(99999999)
 
-            utgvar = ut_list.index(min(ut_list))
+            utgvar = np.argmin(ut_list)
+
 
             print(' Iter: ' + repr(iter) + ' z: ' + repr(z) + ' rc: ' + repr(rc_min) + ' ink: ' + repr(
                 utgvar + 1) + ' utg: ' + repr(utgvar + 1))
 
             # make new partition
             # --------
-
-            #bix[utgvar] = inkvar
 
 
             bix[utgvar], nix[inkvar] = nix[inkvar], bix[utgvar]
@@ -99,10 +101,10 @@ while iter >= 0:
             # N = np.roll(N,1,1)
             # nix = np.roll(nix,1,0)
             #cN = np.roll(cN,1,0)
-          #  c = np.append(cN,cB)
+            #  c = np.append(cN,cB)
 
 
 elapsed = time.time() - t1
 print('Elapsed time: ' + repr(elapsed))
 print(zcheat)
-print("z:",z)
+print(z)
